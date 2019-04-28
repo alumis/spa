@@ -1,0 +1,21 @@
+{
+  "name": "@alumis/spa",
+  "version": "1.0.1",
+  "description": "A small, single page application framework.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alumis/spa.git"
+  },
+  "author": "Emil Müller",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/alumis/spa/issues"
+  },
+  "devDependencies": {
+    "@alumis/semaphore": "^1.0.1"
+  },
+  "peerDependencies": {
+    "@alumis/semaphore": "^1.0.1"
+  },
+  "dependencies": {}
+}
