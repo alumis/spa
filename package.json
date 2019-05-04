@@ -1,6 +1,6 @@
 {
   "name": "@alumis/spa",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A small, single page application framework.",
   "repository": {
     "type": "git",
@@ -12,10 +12,13 @@
     "url": "https://github.com/alumis/spa/issues"
   },
   "devDependencies": {
+    "@alumis/observables": "^1.0.48",
+    "@alumis/observables-dom": "^1.0.62",
     "@alumis/semaphore": "^1.0.1"
   },
   "peerDependencies": {
+    "@alumis/observables": "^1.0.48",
+    "@alumis/observables-dom": "^1.0.62",
     "@alumis/semaphore": "^1.0.1"
-  },
-  "dependencies": {}
+  }
 }

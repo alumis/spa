@@ -1,4 +1,6 @@
 import { Semaphore } from "@alumis/semaphore";
+import { o } from "@alumis/observables";
+import { disposeNode } from "@alumis/observables-dom";
 
 export abstract class SPA {
 
@@ -131,11 +133,11 @@ export abstract class SPA {
 
 export interface IPage {
 
-    dispose();
-    element: HTMLElement;
     loadAsync(args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent): Promise<void>;
-    unloadAsync();
-    getTitle(): string;
+    element: HTMLElement;
+    unloadAsync(): Promise<void>;
+    title: string;
+    dispose();
 }
 
 export interface IDirectoryPage extends IPage {
@@ -149,4 +151,105 @@ export enum PageDirection {
 
     Forward,
     Backward
+}
+
+export abstract class DirectoryPage implements IDirectoryPage {
+
+    element: HTMLElement;
+    title: string;
+    currentPage = o<IPage>(undefined);
+
+    private _aliases = new Map<string, string>();
+    private _subPages = new Map<string, { loadInstanceAsync(): Promise<IPage>; cache: boolean; cachedInstance?: IPage; }>();
+
+    protected registerSubPage(paths: string[], loadInstanceAsync: () => Promise<IPage>, cache = true) {
+
+        this._subPages.set(paths[0], { loadInstanceAsync: loadInstanceAsync, cache: cache });
+
+        for (let i = 1; i < paths.length; ++i)
+            this._aliases.set(paths[i], paths[0]);
+    }
+
+    async loadAsync(args: { [name: string]: string; }, pageDirection: PageDirection, ev?: PopStateEvent) {
+
+        throw new PageNotFoundError();
+    }
+
+    async loadPathAsync(path: string[], args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent) {
+
+        if (0 < path.length) {
+
+            let subPage = this._subPages.get(path[0]);
+
+            if (!subPage) {
+
+                let alias = this._aliases.get(path[0]);
+
+                if (alias)
+                    subPage = this._subPages.get(alias);
+            }
+
+            if (subPage) {
+
+                let pageInstance = subPage.cachedInstance;
+
+                if (!pageInstance) {
+
+                    pageInstance = await subPage.loadInstanceAsync();
+                    delete subPage.loadInstanceAsync;
+
+                    if (subPage.cache)
+                        subPage.cachedInstance = pageInstance;
+                }
+
+                let oldPage = this.currentPage.value;
+
+                this.currentPage.value = pageInstance;
+
+                if ((pageInstance as IDirectoryPage).loadPathAsync)
+                    await (pageInstance as IDirectoryPage).loadPathAsync(path.slice(1), args, pageDirection);
+
+                else await pageInstance.loadAsync(args, pageDirection);
+
+                if ((oldPage && oldPage.element) !== pageInstance.element)
+                    await this.replaceSubPageElementAsync(pageInstance.element, pageDirection);
+
+                if (oldPage && oldPage !== pageInstance)
+                    await oldPage.unloadAsync();
+            }
+
+            else throw new PageNotFoundError();
+        }
+
+        else await this.loadAsync(args, pageDirection, ev);
+    }
+
+    protected abstract replaceSubPageElementAsync(element: HTMLElement, pageDirection: PageDirection): Promise<void>;
+
+    async unloadAsync() {
+
+        let currentPage = this.currentPage.value;
+
+        if (currentPage) {
+
+            await currentPage.unloadAsync();
+            this.currentPage.value = undefined;
+        }
+
+        if (this.element) {
+
+            this.element.remove();
+            disposeNode(this.element);
+            delete this.element;
+        }
+    }
+
+    dispose() {
+
+        this.unloadAsync();
+    }
+}
+
+export class PageNotFoundError extends Error {
+
 }
