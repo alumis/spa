@@ -138,7 +138,6 @@ export interface IPage {
     node: HTMLElement;
     unload();
     title: string;
-    dispose();
 }
 
 export interface IDirectoryPage extends IPage {
@@ -156,9 +155,9 @@ export enum PageDirection {
 
 export type Page = IPage & Component<HTMLElement>;
 
-export abstract class DirectoryPage implements IDirectoryPage {
+export abstract class DirectoryPage<THTMLElement extends HTMLElement> extends Component<THTMLElement> implements IDirectoryPage {
 
-    node: HTMLElement;
+    node: THTMLElement;
     title: string;
     currentPage = o<Page>(undefined);
 
@@ -242,11 +241,6 @@ export abstract class DirectoryPage implements IDirectoryPage {
             disposeNode(this.node);
             delete this.node;
         }
-    }
-
-    dispose() {
-
-        this.unload();
     }
 }
 
