@@ -1,6 +1,6 @@
 {
   "name": "@alumis/spa",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A small, single page application framework.",
   "repository": {
     "type": "git",
@@ -20,5 +20,8 @@
     "@alumis/observables": "^1.0.48",
     "@alumis/observables-dom": "^1.0.62",
     "@alumis/semaphore": "^1.0.1"
+  },
+  "dependencies": {
+    "@alumis/cancellationtoken": "^1.0.4"
   }
 }
