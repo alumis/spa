@@ -208,13 +208,13 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> extends Co
 
                 let oldPage = this.currentPage.value;
 
-                this.currentPage.value = newPage;
-
                 if ((newPage as IDirectoryPage).loadPathAsync)
                     await (newPage as IDirectoryPage).loadPathAsync(path.slice(1), args, pageDirection);
 
                 else await newPage.loadAsync(args, pageDirection);
 
+                this.currentPage.value = newPage;
+                
                 if (oldPage && oldPage !== newPage)
                     await oldPage.unload();
             }
