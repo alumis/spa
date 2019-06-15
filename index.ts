@@ -1,7 +1,6 @@
-import { Semaphore } from "@alumis/semaphore";
+import { Semaphore } from "@alumis/utils/src/Semaphore";
 import { o } from "@alumis/observables";
 import { disposeNode, Component } from "@alumis/observables-dom";
-import { CancellationToken } from "@alumis/cancellationtoken";
 
 export abstract class SPA {
 
