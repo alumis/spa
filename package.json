@@ -12,14 +12,11 @@
     "url": "https://github.com/alumis/spa/issues"
   },
   "devDependencies": {
-    "@alumis/observables": "^1.0.52",
-    "@alumis/observables-dom": "^1.0.74",
-    "@alumis/transitionasync": "^1.0.8",
-    "@alumis/utils": "^1.0.15"
+    "@alumis/observables": "^2.0.11",
+    "@alumis/utils": "^2.0.0"
   },
   "peerDependencies": {
-    "@alumis/observables": "^1.0.52",
-    "@alumis/observables-dom": "^1.0.74",
-    "@alumis/utils": "^1.0.15"
+    "@alumis/observables": "^2.0.11",
+    "@alumis/utils": "^2.0.0"
   }
 }
