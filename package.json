@@ -2,6 +2,9 @@
   "name": "@alumis/spa",
   "version": "1.0.7",
   "description": "A small, single page application framework.",
+  "scripts": {
+    "bump": "git add -A & git commit -am 'bumped' && npm version patch && npm publish && git push --follow-tags"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alumis/spa.git"
