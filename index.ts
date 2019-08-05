@@ -1,6 +1,6 @@
 import { Semaphore } from "@alumis/utils/src/Semaphore";
 import { Component, cleanNode } from "@alumis/observables/src/JSX";
-import { o } from "@alumis/observables/src/Observable";
+import { o, ComputedObservable, co } from "@alumis/observables/src/Observable";
 
 export abstract class SPA {
 
@@ -19,10 +19,12 @@ export abstract class SPA {
             } while (target = target.parentElement);
         });
         addEventListener("popstate", e => { this.invalidateLocationAsync(e); });
+        (this._title = co(() => indexPage.title)).subscribeInvoke(n => document.title = n);
     }
 
     private _currentPageNumber: number;
     private _pageNumbers: number;
+    private _title: ComputedObservable<string>;
 
     async invalidateLocationAsync(e?: PopStateEvent) {
         if (!this._pageNumbers) {
@@ -49,9 +51,9 @@ export abstract class SPA {
             pageDirection = PageDirection.Backward;
         else pageDirection = PageDirection.None;
         let locationComponents = SPA.getLocationComponents(location.pathname, location.search);
-        await this._loadLocationSemaphore.waitOneAsync();
+        await this.loadLocationSemaphore.waitOneAsync();
         try { await this.indexPage.loadPathAsync(locationComponents.path, locationComponents.args, pageDirection, e); }
-        finally { this._loadLocationSemaphore.release(); }
+        finally { this.loadLocationSemaphore.release(); }
     }
 
     navigateAsync(path: string) {
@@ -59,7 +61,7 @@ export abstract class SPA {
         return this.invalidateLocationAsync();
     }
 
-    private _loadLocationSemaphore = new Semaphore();
+    loadLocationSemaphore = new Semaphore();
 
     static getLocationComponents(pathName: string, search: string) {
         if (pathName.startsWith("/"))
@@ -82,11 +84,12 @@ export abstract class SPA {
     }
 }
 
-export type Page<THTMLELEment extends HTMLElement> = {
+interface Page<THTMLElement extends HTMLElement> {
+    node: THTMLElement;
     loadAsync(args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent): Promise<void>;
     unload();
     title: string;
-} & Component<THTMLELEment>;
+};
 
 export interface IDirectoryPage<THTMLElement extends HTMLElement> extends Page<THTMLElement> {
     loadPathAsync(path: string[], args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent): Promise<void>;
@@ -98,7 +101,7 @@ export enum PageDirection {
     Backward
 }
 
-export abstract class DirectoryPage<THTMLElement extends HTMLElement> extends Component<THTMLElement> implements IDirectoryPage<THTMLElement> {
+export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements IDirectoryPage<THTMLElement> {
 
     node: THTMLElement;
     title: string;
