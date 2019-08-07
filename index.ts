@@ -65,7 +65,7 @@ export abstract class SPA {
         let result = [];
         if (this.indexPage) {
             result.push("");
-            result = result.concat(this.indexPage.crawlPathsAsync([]));
+            result = result.concat(await this.indexPage.crawlPathsAsync([]));
         }
         return result;
     }
