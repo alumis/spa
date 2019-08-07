@@ -1,5 +1,5 @@
 import { Semaphore } from "@alumis/utils/src/Semaphore";
-import { Component, cleanNode } from "@alumis/observables/src/JSX";
+import { cleanNode } from "@alumis/observables/src/JSX";
 import { o, ComputedObservable, co } from "@alumis/observables/src/Observable";
 
 export abstract class SPA {
@@ -59,6 +59,15 @@ export abstract class SPA {
     navigateAsync(path: string) {
         history.pushState(null, null, path);
         return this.invalidateLocationAsync();
+    }
+
+    async crawlPathsAsync() {
+        let result = [];
+        if (this.indexPage) {
+            result.push("");
+            result = result.concat(this.indexPage.crawlPathsAsync([]));
+        }
+        return result;
     }
 
     loadLocationSemaphore = new Semaphore();
@@ -161,6 +170,23 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
             cleanNode(this.node);
             delete this.node;
         }
+    }
+
+    async crawlPathsAsync(path: string[]) {
+        let result = [];
+        for (let k of this._subPages.keys()) {
+            path.push(k);
+            result.push(path.join("/"));
+            try {
+                await this.loadPathAsync(path, {}, PageDirection.Forward);
+                let currentPage = this.currentPage.value;
+                if (currentPage instanceof DirectoryPage)
+                    result = result.concat(await currentPage.crawlPathsAsync(path));
+            }
+            catch { }
+            path.pop();
+        }
+        return result;
     }
 }
 
