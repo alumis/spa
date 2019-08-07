@@ -93,7 +93,7 @@ export abstract class SPA {
     }
 }
 
-interface Page<THTMLElement extends HTMLElement> {
+export interface Page<THTMLElement extends HTMLElement> {
     node: THTMLElement;
     loadAsync(args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent): Promise<void>;
     unload();
@@ -147,8 +147,8 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
                     }
                 }
                 let oldPage = this.currentPage.value;
-                if ((newPage as DirectoryPage<HTMLElement>).loadPathAsync)
-                    await (newPage as DirectoryPage<HTMLElement>).loadPathAsync(path.slice(1), args, pageDirection);
+                if ((newPage as IDirectoryPage<HTMLElement>).loadPathAsync)
+                    await (newPage as IDirectoryPage<HTMLElement>).loadPathAsync(path.slice(1), args, pageDirection);
                 else await newPage.loadAsync(args, pageDirection);
                 this.currentPage.value = newPage;
                 if (oldPage && oldPage !== newPage)
