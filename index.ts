@@ -64,7 +64,7 @@ export abstract class SPA {
     async crawlPathsAsync() {
         let result = [];
         if (this.indexPage) {
-            result.push("");
+            result.push("/");
             result = result.concat(await this.indexPage.crawlPathsAsync([]));
         }
         return result;
@@ -96,7 +96,7 @@ export abstract class SPA {
 export interface Page<THTMLElement extends HTMLElement> {
     node: THTMLElement;
     loadAsync(args: { [name: string]: string }, pageDirection: PageDirection, ev?: PopStateEvent): Promise<void>;
-    unload();
+    unload(): void;
     title: string;
 };
 
@@ -152,11 +152,14 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
                 else await newPage.loadAsync(args, pageDirection);
                 this.currentPage.value = newPage;
                 if (oldPage && oldPage !== newPage)
-                    await oldPage.unload();
+                    oldPage.unload();
             }
             else throw new PageNotFoundError();
         }
-        else await this.loadAsync(args, pageDirection, ev);
+        else {
+            this.currentPage.value = null;
+            await this.loadAsync(args, pageDirection, ev);
+        }
     }
 
     unload() {
@@ -176,7 +179,7 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
         let result = [];
         for (let k of this._subPages.keys()) {
             path.push(k);
-            result.push(path.join("/"));
+            result.push("/" + path.join("/"));
             try {
                 await this.loadPathAsync(path, {}, PageDirection.Forward);
                 let currentPage = this.currentPage.value;
