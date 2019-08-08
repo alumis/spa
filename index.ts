@@ -19,12 +19,11 @@ export abstract class SPA {
             } while (target = target.parentElement);
         });
         addEventListener("popstate", e => { this.invalidateLocationAsync(e); });
-        (this._title = co(() => indexPage.title)).subscribeInvoke(n => document.title = n);
+        co(() => indexPage.title).subscribeInvoke(n => document.title = n);
     }
 
     private _currentPageNumber: number;
     private _pageNumbers: number;
-    private _title: ComputedObservable<string>;
 
     async invalidateLocationAsync(e?: PopStateEvent) {
         if (!this._pageNumbers) {
@@ -59,15 +58,6 @@ export abstract class SPA {
     navigateAsync(path: string) {
         history.pushState(null, null, path);
         return this.invalidateLocationAsync();
-    }
-
-    async crawlPathsAsync() {
-        let result = [];
-        if (this.indexPage) {
-            result.push("/");
-            result = result.concat(await this.indexPage.crawlPathsAsync([]));
-        }
-        return result;
     }
 
     loadLocationSemaphore = new Semaphore();
@@ -173,23 +163,6 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
             cleanNode(this.node);
             delete this.node;
         }
-    }
-
-    async crawlPathsAsync(path: string[]) {
-        let result = [];
-        for (let k of this._subPages.keys()) {
-            path.push(k);
-            result.push("/" + path.join("/"));
-            try {
-                await this.loadPathAsync(path, {}, PageDirection.Forward);
-                let currentPage = this.currentPage.value;
-                if (currentPage instanceof DirectoryPage)
-                    result = result.concat(await currentPage.crawlPathsAsync(path));
-            }
-            catch { }
-            path.pop();
-        }
-        return result;
     }
 }
 
