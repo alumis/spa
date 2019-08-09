@@ -103,8 +103,12 @@ export enum PageDirection {
 export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements IDirectoryPage<THTMLElement> {
 
     node: THTMLElement;
-    title: string;
     currentPage = o<Page<HTMLElement>>(undefined);
+
+    get title() {
+        let currentPage = this.currentPage.value;
+        return currentPage && currentPage.title || "";
+    }
 
     private _aliases = new Map<string, string>();
     private _subPages = new Map<string, { loadInstanceAsync(): Promise<Page<HTMLElement>>; cache: boolean; cachedInstance?: Page<HTMLElement>; }>();
@@ -143,6 +147,7 @@ export abstract class DirectoryPage<THTMLElement extends HTMLElement> implements
                 this.currentPage.value = newPage;
                 if (oldPage && oldPage !== newPage)
                     oldPage.unload();
+                await this.loadAsync(args, pageDirection, ev);
             }
             else throw new PageNotFoundError();
         }
